@@ -131,7 +131,8 @@ def make_nexus_admin_site(admin_site):
 
 def make_admin_module(admin_site, name=None, app_name='admin'):
     # XXX: might be a better API so we dont need to do this?
-    new_site = make_nexus_admin_site(admin_site)(name, app_name)
+    new_site = make_nexus_admin_site(admin_site)(name)
+    new_site.app_name = app_name
     for model, admin in admin_site._registry.iteritems():
         new_site.register(model, make_nexus_model_admin(admin))
 
@@ -164,4 +165,4 @@ def make_admin_module(admin_site, name=None, app_name='admin'):
     return AdminModule
 
 if 'django.contrib.admin' in settings.INSTALLED_APPS:
-    nexus.site.register(make_admin_module(admin.site, admin.site.name, admin.site.app_name), admin.site.app_name)
+    nexus.site.register(make_admin_module(admin.site, admin.site.name, 'admin'), 'admin')
