@@ -6,7 +6,6 @@ from django.http import HttpResponseRedirect, HttpResponse, HttpResponseNotModif
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.template.loader import render_to_string
-from django.utils.datastructures import SortedDict
 from django.utils.http import http_date
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
@@ -25,8 +24,18 @@ import os.path
 import posixpath
 import stat
 import urllib
+from collections import OrderedDict
 
 NEXUS_ROOT = os.path.normpath(os.path.dirname(__file__))
+
+
+def odict_insert(di, index, key, value):
+    new_di = odict()
+    for i, (k, v) in enumerate(di.iteritems()):
+        if i == index:
+            new_di[key] = value
+        new_di[k] = v
+    return new_di
 
 
 try:
@@ -58,7 +67,7 @@ except ImportError:  # must be < Django 1.3
 class NexusSite(object):
     def __init__(self, name=None, app_name='nexus'):
         self._registry = {}
-        self._categories = SortedDict()
+        self._categories = OrderedDict()
         if name is None:
             self.name = 'nexus'
         else:
@@ -67,7 +76,8 @@ class NexusSite(object):
 
     def register_category(self, category, label, index=None):
         if index:
-            self._categories.insert(index, category, label)
+            self._categories = odict_insert(
+                    self._categories, index, category, label)
         else:
             self._categories[category] = label
 
